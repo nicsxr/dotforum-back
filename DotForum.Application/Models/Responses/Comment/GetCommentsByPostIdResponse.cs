@@ -1,3 +1,5 @@
+using DotForum.Domain.Enums;
+
 namespace DotForum.Application.Models.Responses.Comment;
 
 public class GetCommentsByPostIdResponse
@@ -13,6 +15,12 @@ public class GetCommentsByPostIdResponse
     public string? ParentCommentId { get; set; }
     
     public int ChildCommentsCount { get; set; }
+    
+    public int Upvotes { get; set; }
+    
+    public int Downvotes { get; set; }
+
+    public VoteStatusEnum Vote { get; set; }
     
     public ICollection<GetCommentsByPostIdResponse> ChildComments { get; set; }
 

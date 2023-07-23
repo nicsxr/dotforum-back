@@ -12,5 +12,5 @@ public interface ICommentService
     public Task<AppResponse<GetCommentsByPostIdResponse>> GetComment(GetCommentRequest request);
     public Task<AppResponse<List<GetCommentsByPostIdResponse>>> GetChildComments(GetChildCommentsRequest request);
     public Task<AppResponse<List<GetCommentsByPostIdResponse>>> GetCommentsByPostId(GetPostCommentsRequest request);
-    public Task<AppResponse<EmptyResponse>> VoteComment(VoteCommentRequest request);
+    public Task<AppResponse<GetCommentsByPostIdResponse>> VoteComment(VoteCommentRequest request);
 }

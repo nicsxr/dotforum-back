@@ -25,5 +25,6 @@ public class PostModel
     public VoteStatusEnum Vote { get; set; }
     
     public int Downvotes { get; set; }
+    
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }

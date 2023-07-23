@@ -26,8 +26,6 @@ public class MappingProfile : Profile
         CreateMap<Comment, CommentModel>();
         CreateMap<PostModel, GetPostResponse>();
         CreateMap<PostModel, VotePostResponse>();
-        CreateMap<Comment, GetCommentsByPostIdResponse>()
-            .ForMember(dest => dest.Username, opt => 
-                opt.MapFrom(src => src.User.UserName));
+        CreateMap<GetCommentsModel, GetCommentsByPostIdResponse>();
     }
 }

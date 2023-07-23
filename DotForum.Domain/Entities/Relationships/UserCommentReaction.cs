@@ -10,5 +10,5 @@ public class UserCommentReaction
     public string CommentId { get; set; }
     public Comment Comment { get; set; }
     
-    public VoteStatusEnum VoteStatus { get; set; }
+    public VoteStatusEnum? VoteStatus { get; set; }
 }

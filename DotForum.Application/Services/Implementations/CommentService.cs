@@ -42,7 +42,7 @@ public class CommentService : ICommentService
             return ResponseHelper.Fail(message: "Invalid user");
 
         Post? post;
-        Comment? parentComment = null;
+        GetCommentsModel? parentComment = null;
         if (!request.PostId.IsNullOrEmpty())
         {
             post = await _postRepository.GetByIdAsync(request.PostId);
@@ -69,46 +69,34 @@ public class CommentService : ICommentService
 
     public async Task<AppResponse<GetCommentsByPostIdResponse>> GetComment(GetCommentRequest request)
     {
-        var comment = await _commentRepository.GetByIdAsync(request.CommentId);
+        var userId = _httpContextAccessor.HttpContext!.User.GetUserId();
+
+        var comment = await _commentRepository.GetByIdAsync(request.CommentId, userId);
 
         return ResponseHelper.Ok(_mapper.Map<GetCommentsByPostIdResponse>(comment));
     }
     
     public async Task<AppResponse<List<GetCommentsByPostIdResponse>>> GetChildComments(GetChildCommentsRequest request)
     {
-        var comments = await _commentRepository.GetChildComments(request.CommentId, request.Page, request.PageSize);
-        var mappedComments = await GetChildCommentsCount(_mapper.Map<List<GetCommentsByPostIdResponse>>(comments));
+        var userId = _httpContextAccessor.HttpContext!.User.GetUserId();
+
+        var comments = await _commentRepository.GetChildComments(request.CommentId, request.Page, request.PageSize, userId);
+        var mappedComments = _mapper.Map<List<GetCommentsByPostIdResponse>>(comments);
 
         return ResponseHelper.Ok(mappedComments);
     }
     
     public async Task<AppResponse<List<GetCommentsByPostIdResponse>>> GetCommentsByPostId(GetPostCommentsRequest request)
     {
-        var comments = await _commentRepository.GetCommentsByPostId(request.PostId, request.Page, request.PageSize);
-        var mappedComments = await GetChildCommentsCount(_mapper.Map<List<GetCommentsByPostIdResponse>>(comments));
+        var userId = _httpContextAccessor.HttpContext!.User.GetUserId();
+
+        var comments = await _commentRepository.GetCommentsByPostId(request.PostId, request.Page, request.PageSize, userId);
+        var mappedComments =_mapper.Map<List<GetCommentsByPostIdResponse>>(comments);
         
         return ResponseHelper.Ok(mappedComments);
     }
 
-    private async Task<List<GetCommentsByPostIdResponse>> GetChildCommentsCount(List<GetCommentsByPostIdResponse> comments)
-    {
-        foreach (var comment in comments)
-        {
-            foreach (var childComment in comment.ChildComments)
-            {
-                foreach (var grandChildComment in childComment.ChildComments)
-                {
-                    grandChildComment.ChildCommentsCount = await _commentRepository.GetChildCommentsCount(grandChildComment.CommentId);
-                }
-                childComment.ChildCommentsCount = await _commentRepository.GetChildCommentsCount(childComment.CommentId);
-            }
-            comment.ChildCommentsCount = await _commentRepository.GetChildCommentsCount(comment.CommentId);
-        }
-
-        return comments;
-    }
-
-    public async Task<AppResponse<EmptyResponse>> VoteComment(VoteCommentRequest request)
+    public async Task<AppResponse<GetCommentsByPostIdResponse>> VoteComment(VoteCommentRequest request)
     {
         var userId = _httpContextAccessor.HttpContext!.User.GetUserId()!;
 
@@ -136,8 +124,9 @@ public class CommentService : ICommentService
             }
         }
         
-        // return ResponseHelper.Ok(_mapper.Map<VotePostResponse>(await _postRepository.GetPostModelById(request.PostId, userId)));
-        return ResponseHelper.Ok();
+        var comment = await _commentRepository.GetByIdAsync(request.CommentId, userId);
+
+        return ResponseHelper.Ok(_mapper.Map<GetCommentsByPostIdResponse>(comment));
     }
         
 }
