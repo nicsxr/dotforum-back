@@ -20,9 +20,9 @@ public class UserController : ControllerBase
     
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterUserRequest model)
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
     {
-        return Ok(await _userService.RegisterUser(model));
+        return Ok(await _userService.RegisterUser(request));
     }
 
     [HttpGet("")]
@@ -30,5 +30,12 @@ public class UserController : ControllerBase
     public async Task<ActionResult<AppResponse<GetUserResponse>>> GetUser()
     {
         return Ok(await _userService.GetUser());
+    }
+    
+    [HttpPost("posts")]
+    [Authorize]
+    public async Task<ActionResult> GetUserPosts([FromBody] GetUserPostsRequest request)
+    {
+        return Ok(await _userService.GetUserPosts(request));
     }
 }

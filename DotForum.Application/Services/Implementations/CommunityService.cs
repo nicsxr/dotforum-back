@@ -6,8 +6,11 @@ using DotForum.Application.Models.Responses.Community;
 using DotForum.Application.Services.Abstractions;
 using DotForum.Domain.Entities;
 using DotForum.Domain.Entities.Relationships;
+using DotForum.Domain.Enums;
+using DotForum.Domain.Models;
 using DotForum.Persistence.Repositories.Abstractions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace DotForum.Application.Services.Implementations;
 
@@ -16,16 +19,18 @@ public class CommunityService : ICommunityService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IUserRepository _userRepository;
     private readonly ICommunityRepository _communityRepository;
+    private readonly IPostRepository _postRepository;
     private readonly IMapper _mapper;
     private readonly IUserCommunityRepository _userCommunityRepository;
 
     public CommunityService(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository,
-        ICommunityRepository communityRepository, IMapper mapper, IUserCommunityRepository userCommunityRepository)
+        ICommunityRepository communityRepository, IMapper mapper, IUserCommunityRepository userCommunityRepository, IPostRepository postRepository)
     {
         _httpContextAccessor = httpContextAccessor;
         _userRepository = userRepository;
         _communityRepository = communityRepository;
         _userCommunityRepository = userCommunityRepository;
+        _postRepository = postRepository;
         _mapper = mapper;
     }
     
@@ -93,5 +98,32 @@ public class CommunityService : ICommunityService
         await _userCommunityRepository.AddAsync(follow);
         
         return ResponseHelper.Ok();
+    }
+    
+    public async Task<AppResponse<List<PostModel>>> GetCommunityPosts(GetCommunityPostsRequest request)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
+
+        var posts = await _postRepository.GetQueryableAll()
+            .Where(p => p.CommunityId == request.CommunityId)
+            .OrderByDescending(p => p.Timestamp)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(p => new PostModel
+            {
+                Id = p.Id,
+                CommunityId = p.CommunityId,
+                CommunityName = p.Community.Name,
+                UserId = p.UserId,
+                Username = p.User.UserName!,
+                Title = p.Title,
+                Body = p.Body,
+                TotalComments = p.Comments.Count,
+                Upvotes = p.Reactions.Count(r => r.VoteStatus == VoteStatusEnum.Upvote),
+                Downvotes = p.Reactions.Count(r => r.VoteStatus == VoteStatusEnum.Downvote),
+                Vote = p.Reactions.FirstOrDefault(r => r.UserId == userId).VoteStatus ?? VoteStatusEnum.Novote
+            }).ToListAsync();
+        
+        return ResponseHelper.Ok(posts);
     }
 }

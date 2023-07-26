@@ -42,4 +42,12 @@ public class CommunityController : ControllerBase
     {
         return Ok(await _communityService.FollowCommunity(request));
     }
+    
+        
+    [HttpPost("posts")]
+    [Authorize]
+    public async Task<IActionResult> GetCommunityPosts([FromBody]GetCommunityPostsRequest request)
+    {
+        return Ok(await _communityService.GetCommunityPosts(request));
+    }
 }
