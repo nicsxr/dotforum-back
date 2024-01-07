@@ -25,6 +25,19 @@ public class CommunityRepository : CommonRepository<Community>, ICommunityReposi
         
         return community;
     }
+    public async Task<CommunityFullInfoModel?> GetByNormalizedName(string name)
+    {
+        var community = await DbContext.Communities
+            .Where(c => c.NormalizedName == name.ToUpper())
+            .Include(c => c.Posts)
+            .Select(c => new CommunityFullInfoModel
+            {
+                Community = c,
+                TotalPosts = c.Posts != null ? c.Posts.Count : 0
+            }).FirstOrDefaultAsync();
+        
+        return community;
+    }
     
     public async Task<List<CommunityFullInfoModel>> GetAllFollowedByUserAsync(string userId)
     {

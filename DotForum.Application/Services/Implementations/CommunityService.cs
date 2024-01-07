@@ -40,11 +40,16 @@ public class CommunityService : ICommunityService
         
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null) return ResponseHelper.Fail<CreateCommunityResponse>();
-        
+
+        var communityExists = await _communityRepository.GetByNormalizedName(request.Name);
+
+        if (communityExists != null) return ResponseHelper.Fail<CreateCommunityResponse>();
+
         var community = new Community
         {
             Name = request.Name,
             Description = request.Description,
+            NormalizedName = request.Name.ToUpper(),
             UserId = userId!
         };
 

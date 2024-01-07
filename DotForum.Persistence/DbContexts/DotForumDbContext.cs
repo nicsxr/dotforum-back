@@ -29,7 +29,10 @@ public class DotForumDbContext : DbContext
             .IsRequired(false);
         builder.Entity<Community>().Property(c => c.Id).HasMaxLength(36)
             .ValueGeneratedOnAdd();
-        
+
+        builder.Entity<Community>().HasIndex(c => c.Name).IsUnique();
+        builder.Entity<Community>().HasIndex(c => c.NormalizedName).IsUnique();
+
         builder.Entity<ApplicationUser>()
             .Property(u => u.Email)
             .IsRequired(false);
