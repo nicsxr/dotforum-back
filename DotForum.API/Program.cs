@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: myAllowSpecificOrigins,
         policy  =>
         {
-            policy.WithOrigins("http://localhost:5173", "http://192.168.0.161:5173");
+            policy.WithOrigins("http://localhost:5173", "http://192.168.0.161:5173", "https://nice-dune-0e2666410.4.azurestaticapps.net");
             policy.AllowAnyHeader();
             policy.AllowAnyMethod();
             policy.AllowCredentials();
